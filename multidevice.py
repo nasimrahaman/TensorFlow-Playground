@@ -24,7 +24,7 @@ def matpow(M, n):
 
 
 # Context manager to tell Tensorflow where to put the graph. Constants `a` and `b` have a 'device' attribute that reads
-# '/device:GPU:0', as does an and bn (see below).
+# '/device:GPU:0', as do an and bn (see below).
 with tf.device('/gpu:0'):
     # Wrap numpy arrays A and B
     a = tf.constant(A)
