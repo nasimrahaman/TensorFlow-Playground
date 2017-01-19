@@ -158,6 +158,9 @@ print("[+] Waiting for Threads to join...")
 for device in config.devices:
     training_threads[device].join()
 
+print("[+] Stopping runner...")
+feeder.stop_runner()
+
 print("[+] Saving...")
 saver.save(session, save_path=os.path.join(config.checkpoint_dir, 'model'),
            global_step=global_step)
