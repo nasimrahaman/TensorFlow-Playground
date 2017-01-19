@@ -22,13 +22,14 @@ config = Namespace()
 
 # Configure
 config.verbose = True
-config.num_epochs_per_data_thread = 100
+config.num_epochs_per_data_thread = 50
 config.num_data_threads = 2
 config.batch_size = 100
 config.devices = ('/gpu:0', '/gpu:1', '/gpu:2', '/gpu:3')
 # config.devices = ('/gpu:0',)
 config.log_dir = '/export/home/nrahaman/Python/Scrap/tflogs/mnist-async'
 config.checkpoint_dir = '/export/home/nrahaman/Python/Scrap/tfckpts/mnist-async'
+config.load_from_checkpoint = True
 
 
 # ---- DATA-LOGISTICS
@@ -115,8 +116,12 @@ print("[+] Defining Summary Writer...")
 summary_writer = tf.summary.FileWriter(logdir=config.log_dir)
 
 print("[+] Defining Saver...")
-# Define saver
-saver = tf.train.Saver()
+# Define saver (save all global variables)
+saver = tf.train.Saver(tf.global_variables())
+
+if config.load_from_checkpoint:
+    print("[+] Loading variables from checkpoint.")
+    saver.restore(session, tf.train.latest_checkpoint(config.checkpoint_dir))
 
 # Some calculations...
 num_batches_per_data_thread = len(range(0, config.num_samples, config.batch_size)) * \
@@ -124,11 +129,13 @@ num_batches_per_data_thread = len(range(0, config.num_samples, config.batch_size
 num_batches = num_batches_per_data_thread * config.num_data_threads
 num_batches_per_device = num_batches / len(config.devices)
 
+
 # Make thread target
 def step(sess, train_op, summary_op, num_steps):
     for step_num in range(num_steps):
-        summary, _ = sess.run([summary_op, train_op])
+        summary, _ = sess.run([summary_op, images, train_op])
         summary_writer.add_summary(summary=summary)
+
 
 print("[+] Starting Runner...")
 # Start runners
